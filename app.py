@@ -3,6 +3,11 @@ import os
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import JSONResponse, Response
 import httpx
+import logging
+
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO
 
 app = FastAPI()
 
@@ -36,6 +41,9 @@ async def chat_completions(request: Request):
     # upstream_url = f"{UPSTREAM_URL.rstrip('/')}/v1/chat/completions"
     upstream_url = f"{UPSTREAM_URL.rstrip('/')}"
 
+    # 👉 LOG DA URL COMPLETA QUE ESTÁ SENDO CHAMADA
+    logger.info(f"Chamando upstream URL via POST: {upstream_url}"
+
     async with httpx.AsyncClient(verify=VERIFY_SSL, timeout=60.0) as client:
         try:
             upstream_response = await client.post(
@@ -47,6 +55,7 @@ async def chat_completions(request: Request):
                 }
             )
         except httpx.RequestError as exc:
+            logger.error(f"Erro ao chamar upstream {upstream_url}: {exc}")            
             # Erro de conexão com o backend
             raise HTTPException(status_code=502, detail=f"Upstream error: {exc}") from exc
 
