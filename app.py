@@ -21,7 +21,7 @@ UPSTREAM_URL = os.environ.get(
 VERIFY_SSL = os.environ.get("VERIFY_SSL", "true").lower() == "true"
 
 
-@app.post("/v1/chat/completions")
+@app.post("/chat/completions")
 async def chat_completions(request: Request):
     # 1. Pega o Authorization enviado pelo OLS
     auth_header = request.headers.get("authorization")
