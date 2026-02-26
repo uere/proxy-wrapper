@@ -1,6 +1,9 @@
 # Envs
 
 
-UPSTREAM_URL = string "URL"
-VERIFY_SSL = boolean ["tue","false"]
-API_VERSION = string "versao"
+UPSTREAM_URL = "URL" string
+
+VERIFY_SSL = ["true","false"] string
+
+API_VERSION = "versao" string
+
