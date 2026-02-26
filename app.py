@@ -19,6 +19,7 @@ UPSTREAM_URL = os.environ.get(
 # Se seu backend tiver problema com TLS interno/self-signed,
 # você pode usar VERIFY_SSL = False e ajustar depois
 VERIFY_SSL = os.environ.get("VERIFY_SSL", "true").lower() == "true"
+API_VERSION = os.environ.get("API_VERSION", "2024-12-01-preview")  # default se quiser
 
 
 @app.post("/chat/completions")
@@ -37,10 +38,11 @@ async def chat_completions(request: Request):
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid JSON body")
 
-    # 4. Encaminha pro seu backend com header auth-token
-    # upstream_url = f"{UPSTREAM_URL.rstrip('/')}/v1/chat/completions"
+    # 4. Encaminha pro seu backend com header auth-token    
     upstream_url = f"{UPSTREAM_URL.rstrip('/')}/chat/completions"
-
+    params = {
+        "api-version": API_VERSION
+    }
     # 👉 LOG DA URL COMPLETA QUE ESTÁ SENDO CHAMADA
     logger.info(f" [Proxy] Chamando upstream via POST em: {upstream_url}")
 
@@ -48,10 +50,11 @@ async def chat_completions(request: Request):
         try:
             upstream_response = await client.post(
                 upstream_url,
+                params=params,
                 json=body,
                 headers={
                     "auth-token": token,
-                    "content-type": "application/json"
+                    "Content-Type": "application/json"
                 }
             )
         except httpx.RequestError as exc:
