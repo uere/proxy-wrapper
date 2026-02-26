@@ -3,7 +3,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Instala dependências
-RUN pip install fastapi uvicorn httpx logging
+RUN pip install fastapi uvicorn httpx 
 
 # Copia o código
 COPY app.py /app/app.py
