@@ -42,7 +42,7 @@ async def chat_completions(request: Request):
     upstream_url = f"{UPSTREAM_URL.rstrip('/')}"
 
     # 👉 LOG DA URL COMPLETA QUE ESTÁ SENDO CHAMADA
-    logger.info(f"Chamando upstream URL via POST: {upstream_url}")
+    logger.info(f"[Proxy] Chamando upstream via POST em: {upstream_url}")
 
     async with httpx.AsyncClient(verify=VERIFY_SSL, timeout=60.0) as client:
         try:
