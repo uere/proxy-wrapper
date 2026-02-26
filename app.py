@@ -54,7 +54,7 @@ async def chat_completions(request: Request):
     )
 
     # 👉 LOG DA URL COMPLETA QUE ESTÁ SENDO CHAMADA
-    logger.info(f"[Proxy] Chamando upstream via POST em: {upstream_url}")
+    logger.info(f" [Proxy] Chamando upstream via POST em: {upstream_url}")
 
     async with httpx.AsyncClient(verify=VERIFY_SSL, timeout=60.0) as client:
         try:
@@ -69,14 +69,14 @@ async def chat_completions(request: Request):
                 },
             )
         except httpx.RequestError as exc:
-            logger.error(f"[Proxy] Erro ao chamar upstream {upstream_url}: {exc}")
+            logger.error(f" [Proxy] Erro ao chamar upstream {upstream_url}: {exc}")
             # Erro de conexão com o backend
             raise HTTPException(status_code=502, detail=f"Upstream error: {exc}") from exc
 
     # Se o upstream retornar erro, loga corpo pra ajudar no debug
     if upstream_response.status_code >= 400:
         logger.error(
-            f"[Proxy] Upstream retornou {upstream_response.status_code} "
+            f" [Proxy] Upstream retornou {upstream_response.status_code} "
             f"para {upstream_url}: {upstream_response.text}"
         )
 
@@ -86,4 +86,3 @@ async def chat_completions(request: Request):
         status_code=upstream_response.status_code,
         media_type=upstream_response.headers.get("content-type", "application/json"),
     )
-``
