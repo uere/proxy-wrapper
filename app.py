@@ -8,8 +8,7 @@ app = FastAPI()
 
 # URL do seu provedor interno (ajuste se o path for diferente)
 UPSTREAM_URL = os.environ.get(
-    "UPSTREAM_URL",
-    "https://nexus-ia-proxy.big.intranet.bb.com.br"
+    "UPSTREAM_URL"
 )
 
 # Se seu backend tiver problema com TLS interno/self-signed,
@@ -24,7 +23,7 @@ async def chat_completions(request: Request):
     if not auth_header or not auth_header.lower().startswith("bearer "):
         raise HTTPException(status_code=401, detail="Authorization header missing or invalid")
 
-    # 2. Extrai o token (apiKey que você colocou no Secret)
+    # 2. Extrai o token (apitoken que você colocou no Secret)
     token = auth_header.split(" ", 1)[1].strip()
 
     # 3. Lê o body (JSON OpenAI-style)
@@ -34,7 +33,8 @@ async def chat_completions(request: Request):
         raise HTTPException(status_code=400, detail="Invalid JSON body")
 
     # 4. Encaminha pro seu backend com header auth-token
-    upstream_url = f"{UPSTREAM_URL.rstrip('/')}/v1/chat/completions"
+    # upstream_url = f"{UPSTREAM_URL.rstrip('/')}/v1/chat/completions"
+    upstream_url = f"{UPSTREAM_URL.rstrip('/')}"
 
     async with httpx.AsyncClient(verify=VERIFY_SSL, timeout=60.0) as client:
         try:
