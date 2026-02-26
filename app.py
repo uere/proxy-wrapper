@@ -39,7 +39,7 @@ async def chat_completions(request: Request):
 
     # 4. Encaminha pro seu backend com header auth-token
     # upstream_url = f"{UPSTREAM_URL.rstrip('/')}/v1/chat/completions"
-    upstream_url = f"{UPSTREAM_URL.rstrip('/')}"
+    upstream_url = f"{UPSTREAM_URL.rstrip('/')}/chat/completions"
 
     # 👉 LOG DA URL COMPLETA QUE ESTÁ SENDO CHAMADA
     logger.info(f"[Proxy] Chamando upstream via POST em: {upstream_url}")
