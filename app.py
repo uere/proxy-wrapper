@@ -65,20 +65,31 @@ async def chat_completions(request: Request):
                     # Conforme documentação do Nexus:
                     # --header 'auth-token: <token>'
                     "auth-token": token,
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json",                    
+                    "json"=body,
+                    "headers"=upstream_headers,
+
                 },
             )
         except httpx.RequestError as exc:
-            logger.error(f" [Proxy] Erro ao chamar upstream {upstream_url}: {exc}")
+            logger.error(f" [Proxy] Erro ao chamar upstream {upstream_url}: {exc}")            
+            logger.error(f"  URL: {upstream_url}")
+            logger.error(f"  Headers enviados: {upstream_headers}")
+            logger.error(f"  Body enviado: {body}")
+            logger.error(f"  Exception: {exc}")
+
             # Erro de conexão com o backend
             raise HTTPException(status_code=502, detail=f"Upstream error: {exc}") from exc
 
-    # Se o upstream retornar erro, loga corpo pra ajudar no debug
+      # Se o upstream retornar erro (HTTP 4xx/5xx), loga tudo da requisição + resposta
     if upstream_response.status_code >= 400:
-        logger.error(
-            f" [Proxy] Upstream retornou {upstream_response.status_code} "
-            f"para {upstream_url}: {upstream_response.text}"
-        )
+        logger.error(" [Proxy] Upstream retornou erro")
+        logger.error(f"  Status code: {upstream_response.status_code}")
+        logger.error(f"  URL: {upstream_url}")
+        logger.error(f"  Headers enviados: {upstream_headers}")
+        logger.error(f"  Body enviado: {body}")
+        logger.error(f"  Resposta do upstream: {upstream_response.text}")
+
 
     # 5. Retorna resposta (assumindo que o backend já devolve JSON estilo OpenAI)
     return Response(
