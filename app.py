@@ -29,34 +29,22 @@ VERIFY_SSL = os.environ.get("VERIFY_SSL", "true").lower() == "true"
 async def chat_completions(request: Request):
     # 1. Pega o Authorization enviado pelo OLS
     auth_header = request.headers.get("authorization")
-    if not auth_header or not auth_header.lower().startswith("bearer "):
-        raise HTTPException(status_code=401, detail="Authorization header missing or invalid")
 
+    if not auth_header:
+        raise HTTPException(status_code=401, detail="Authorization header missing")
 
-    # Normaliza pra facilitar comparação do esquema (Bearer/apikey)
-    parts = auth_header.split(" ", 1)
-    if len(parts) == 2:
-        scheme, credentials = parts[0].strip(), parts[1].strip()
-    else:
-        # Formato inesperado, sem espaço
-        scheme, credentials = None, auth_header.strip()
-
-    token = None
-
-    # Aceita:
-    #   Authorization: apikey <token>
-    #   Authorization: Bearer <token>
-    if scheme and scheme.lower() in ("apikey", "bearer"):
-        token = credentials
-    else:
-        # Se quiser repassar qualquer coisa, ao invés de falhar, troque aqui:
-        # token = auth_header.strip()
-        logger.error(f"[Proxy] Esquema de Authorization não suportado: {auth_header}")
-        raise HTTPException(status_code=401, detail="Unsupported Authorization scheme")
+    # 2. Quebra o Authorization por espaço e pega SEMPRE a ÚLTIMA parte
+    # Ex:
+    #   "apikey abc123"                 -> ["apikey", "abc123"]           -> "abc123"
+    #   "Bearer auth-token: abc123"     -> ["Bearer", "auth-token:", "abc123"] -> "abc123"
+    #   "qualquer coisa aqui tokenXYZ"  -> ["qualquer", "coisa", "aqui", "tokenXYZ"] -> "tokenXYZ"
+    parts = auth_header.split()
+    if len(parts) == 0:
+        raise HTTPException(status_code=401, detail="Invalid Authorization header")
+    token = parts[-1]
 
     # Loga só um preview do token (pra não vazar inteiro em log)
     logger.info(f"[Proxy] Token recebido (safe preview): {token[:5]}***")
-    
 
     # 3. Lê o body (JSON OpenAI-style)
     try:
