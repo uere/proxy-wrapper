@@ -32,8 +32,31 @@ async def chat_completions(request: Request):
     if not auth_header or not auth_header.lower().startswith("bearer "):
         raise HTTPException(status_code=401, detail="Authorization header missing or invalid")
 
-    # 2. Extrai o token (apitoken que você colocou no Secret)
-    token = auth_header.split(" ", 1)[1].strip()
+
+    # Normaliza pra facilitar comparação do esquema (Bearer/apikey)
+    parts = auth_header.split(" ", 1)
+    if len(parts) == 2:
+        scheme, credentials = parts[0].strip(), parts[1].strip()
+    else:
+        # Formato inesperado, sem espaço
+        scheme, credentials = None, auth_header.strip()
+
+    token = None
+
+    # Aceita:
+    #   Authorization: apikey <token>
+    #   Authorization: Bearer <token>
+    if scheme and scheme.lower() in ("apikey", "bearer"):
+        token = credentials
+    else:
+        # Se quiser repassar qualquer coisa, ao invés de falhar, troque aqui:
+        # token = auth_header.strip()
+        logger.error(f"[Proxy] Esquema de Authorization não suportado: {auth_header}")
+        raise HTTPException(status_code=401, detail="Unsupported Authorization scheme")
+
+    # Loga só um preview do token (pra não vazar inteiro em log)
+    logger.info(f"[Proxy] Token recebido (safe preview): {token[:5]}***")
+    
 
     # 3. Lê o body (JSON OpenAI-style)
     try:
