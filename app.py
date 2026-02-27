@@ -53,6 +53,12 @@ async def chat_completions(request: Request):
         f"/chat/completions?=&api-version={API_VERSION}"
     )
 
+    # Monta headers que serão enviados pro Nexus
+    upstream_headers = {
+        "auth-token": token,
+        "Content-Type": "application/json",
+    }
+    
     # 👉 LOG DA URL COMPLETA QUE ESTÁ SENDO CHAMADA
     logger.info(f" [Proxy] Chamando upstream via POST em: {upstream_url}")
 
