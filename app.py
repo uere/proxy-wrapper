@@ -61,26 +61,16 @@ async def chat_completions(request: Request):
             upstream_response = await client.post(
                 upstream_url,
                 json=body,
-                headers={
-                    # Conforme documentação do Nexus:
-                    # --header 'auth-token: <token>'
-                    "auth-token": token,
-                    "Content-Type": "application/json",                    
-                    "json"=body,
-                    "headers"=upstream_headers,
-
-                },
+                headers=upstream_headers,
             )
         except httpx.RequestError as exc:
-            logger.error(f" [Proxy] Erro ao chamar upstream {upstream_url}: {exc}")            
+            # Aqui logamos TODOS os detalhes da requisição em caso de erro de transporte
+            logger.error(" [Proxy] Erro de transporte ao chamar upstream")
             logger.error(f"  URL: {upstream_url}")
             logger.error(f"  Headers enviados: {upstream_headers}")
             logger.error(f"  Body enviado: {body}")
             logger.error(f"  Exception: {exc}")
-
-            # Erro de conexão com o backend
             raise HTTPException(status_code=502, detail=f"Upstream error: {exc}") from exc
-
       # Se o upstream retornar erro (HTTP 4xx/5xx), loga tudo da requisição + resposta
     if upstream_response.status_code >= 400:
         logger.error(" [Proxy] Upstream retornou erro")
